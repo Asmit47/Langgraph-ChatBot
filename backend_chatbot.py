@@ -7,31 +7,30 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-# Load environment variables
+
 load_dotenv(override=True)
 
 if not os.getenv("NVIDIA_API_KEY"):
     raise ValueError("NVIDIA_API_KEY is not set. Check your .env file!")
 
-# Initialize the model
-llm = ChatNVIDIA(model="moonshotai/kimi-k2.6")
 
-# Define state
+llm = ChatNVIDIA(model="nvidia/nemotron-3-super-120b-a12b")
+
+
 class state(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
-# Define node
-def chat_node(state: state):
-    message = state['messages']
-    response = llm.invoke(message)
-    return {'messages': response}
 
-# Compile graph
+from langchain_core.runnables import RunnableLambda
+
+chat_node = RunnableLambda(lambda state: state["messages"]) | llm | (lambda response: {"messages": response})
+
+
 checkpointer = MemorySaver()
 graph = StateGraph(state)
-graph.add_node(chat_node, 'chat_node')
-graph.add_edge(START, 'chat_node')
-graph.add_edge('chat_node', END)
+graph.add_node("chat_node", chat_node)
+graph.add_edge(START, "chat_node")
+graph.add_edge("chat_node", END)
 
 chatbot = graph.compile(checkpointer=checkpointer)
 
