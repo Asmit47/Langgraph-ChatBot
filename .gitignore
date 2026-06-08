@@ -1,3 +1,8 @@
 .env
 venv/
 __pycache__/
+
+# Database files (runtime data, not for version control)
+*.db
+*.sqlite
+*.sqlite3

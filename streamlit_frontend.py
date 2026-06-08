@@ -1,6 +1,6 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
-from backend_chatbot import chatbot
+from backend_chatbot_sql import chatbot, fetch_threads
 import uuid
 
 
@@ -9,7 +9,7 @@ if 'thread_id' not in st.session_state:
     st.session_state['thread_id'] = str(uuid.uuid4())
 
 if 'chat_thread' not in st.session_state:
-    st.session_state['chat_thread'] = []
+    st.session_state['chat_thread'] = fetch_threads()
 
 if 'message_history' not in st.session_state:
     st.session_state['message_history'] = []
@@ -21,7 +21,7 @@ def gen_thread():
 
 def add_thread(thread_id):
     if thread_id not in st.session_state['chat_thread']:
-        st.session_state['chat_thread'].append(thread_id)
+        st.session_state['chat_thread'].add(thread_id)
 
 def reset_chat():
     thread_id = gen_thread()
